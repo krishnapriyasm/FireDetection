@@ -1,0 +1,21 @@
+#################################
+Barbeq : Perfect
+    lower = [0, 0, 180]
+    upper = [25, 255, 255]
+
+#################################
+ShorterlsyamNight
+    
+    lower = [0, 0, 0]
+    upper = [40/30, 255, 255]
+
+
+#################################
+fire1 : No False Positive, but lot of missing recognition
+    lower = [0, 10, 160] //10 is to remove sky
+    upper = [30, 255, 255]
+
+#################################
+forest1/2/4/5 : Good
+    lower = [0, 100, 90]
+    upper = [30, 255, 255]

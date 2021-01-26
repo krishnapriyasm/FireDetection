@@ -1,0 +1,13 @@
+ 
+    lower = [60, 0,0]
+    upper = [255,180,65]
+    Pure fire X, but really green trees are correctly exculded
+     
+    lower = [60, 0,0]
+    upper = [255,255,65]
+    Pure fire X, but really green trees are correctly exculded
+
+
+    
+    lower = [18, 50, 50]
+    upper = [35, 255, 255]
