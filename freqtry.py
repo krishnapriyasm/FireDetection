@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.fft import fft,fftfreq
 
 
-cap = cv2.VideoCapture('fire1.avi')
+cap = cv2.VideoCapture('forest1.avi')
 frame_width = int( cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 
 frame_height =int( cap.get( cv2.CAP_PROP_FRAME_HEIGHT))
@@ -28,6 +28,7 @@ ret2, frame2 = cap.read()
 area_array = []
 
 contour_fire_pixel_colors_means_array = []
+fire_intensity_trend_array = []
 frame_number_array = []
 i = 0
 while True:
@@ -82,12 +83,15 @@ while True:
     for contour in contours:
         (x, y, w, h) = cv2.boundingRect(contour)
 
+
+        if  int(cv2.contourArea(contour)) > biggest_area  :
+            biggest_area = int(cv2.contourArea(contour))
+            biggest_contour = contour
+
+
         if cv2.contourArea(contour) < 500:
             continue
 
-        if  int(cv2.contourArea(contour)) > biggest_area :
-            biggest_area = int(cv2.contourArea(contour))
-            biggest_contour = contour
 
         contour_array.append( cv2.contourArea(contour) )
         cv2.rectangle(frame1, (x, y), (x+w, y+h), (0, 255, 0), 2)
@@ -97,7 +101,7 @@ while True:
         #cv2.putText(frame1, "Status: {}".format('Movement'), (10, 20), cv2.FONT_HERSHEY_SIMPLEX,1, (0, 0, 255), 3)
     #cv2.drawContours(frame1, contours, -1, (0, 255, 0), 2) #small contours
 
-    if  len(contour_array) != 0:
+    if  len(contours) != 0:
         #print(contour_array)
         # area_array.append(  max(contour_array)  )
         # frame_number_array.append(i)
@@ -106,21 +110,36 @@ while True:
         hsv_pic  = cv2.cvtColor(frame2, cv2.COLOR_BGR2HSV)
         frame_number_array.append(i)
 
-        for z in biggest_contour :
+        for z in biggest_contour : # For each coordinate in the biggest contour add to contour_fire_pixel_colors array.
             x,y = z[0] # z = [[22 44]], z[0] = [22 44] tuples, sliceing of aarays
 
 
-            color = hsv_pic[x, y]
-            contour_fire_pixel_colors.append(color[0])
+            color = hsv_pic[y, x]
+            contour_fire_pixel_colors.append(color[2])# Value / Brigness part TODO: Make it better maybe a combo of V and S
             # print(color)
         contour_fire_pixel_colors_means_array.append( np.mean(contour_fire_pixel_colors) )
         print( "i : ",i,"  mean: ", np.mean(contour_fire_pixel_colors))
+
+        if i == 1 :
+            fire_intensity_trend_array.append(0)
+        else :
+            if abs(contour_fire_pixel_colors_means_array[i-1] - contour_fire_pixel_colors_means_array[i-2]) < 0.0001 :
+                fire_intensity_trend_array.append(0)
+            elif contour_fire_pixel_colors_means_array[i-1] > contour_fire_pixel_colors_means_array[i-2] :
+                fire_intensity_trend_array.append(1)
+            else :
+                fire_intensity_trend_array.append(-1)
+                
+
+            
+
         freq_img = cv2.drawContours(frame2,biggest_contour, -1, (0,255,0), 3)
 
     else :
         freq_img = frame1
         # area_array.append(  0  )
-        contour_fire_pixel_colors_means_array.append( 22 )
+        contour_fire_pixel_colors_means_array.append( 0 )
+        fire_intensity_trend_array.append(0)
         
         frame_number_array.append(i)
     # print(i)
@@ -145,10 +164,11 @@ while True:
 # print(area_array)
 # area_array.pop
 
-s=plt.plot(frame_number_array,contour_fire_pixel_colors_means_array)
+# s=plt.plot(frame_number_array,contour_fire_pixel_colors_means_array)
+s=plt.plot(frame_number_array,fire_intensity_trend_array)
 plt.ylabel('Avg Color')
 plt.show()
-yf = fft(contour_fire_pixel_colors_means_array)
+yf = fft(fire_intensity_trend_array)
 xf = fftfreq(int(length-1), 1)
 
 plt.plot(xf, np.abs(yf))
